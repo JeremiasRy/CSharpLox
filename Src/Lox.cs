@@ -5,15 +5,13 @@ public static class Lox
     private static bool hadError = false;
     public static void RunFile(string pathToFile)
     {
-        using (var fs = new FileStream(pathToFile, FileMode.Open))
+        using var fs = new FileStream(pathToFile, FileMode.Open);
+        byte[] bytes = new byte[fs.Length];
+        fs.Read(bytes);
+        Run(Encoding.UTF8.GetString(bytes));
+        if (hadError)
         {
-            byte[] bytes = new byte[fs.Length];
-            fs.Read(bytes);
-            Run(Encoding.UTF8.GetString(bytes));
-            if (hadError)
-            {
-                return;
-            }
+            return;
         }
     }
 
@@ -36,8 +34,8 @@ public static class Lox
 
     public static void Run(string src)
     {
-        string[] tokens = src.Split(" ");
-        Error(12, "Invalid Token!");
+        Scanner scanner = new(src);
+        List<Token> tokens = scanner.ScanTokens();
         foreach (var token in tokens)
         {
             Console.WriteLine(token);
