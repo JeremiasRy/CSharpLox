@@ -31,7 +31,20 @@ public class Parser(List<Token> tokens)
 
     Expr Expression()
     {
-        return Equality();
+        return Ternary();
+    }
+
+    Expr Ternary()
+    {
+        Expr expr = Equality();
+        if (Match(TokenType.QUESTION_MARK))
+        {
+            Expr exprIfTrue = Expression();
+            Consume(TokenType.COLON, "Expect ':' after expression ternary operator");
+            Expr exprIfFalse = Expression();
+            expr = new Ternary(expr, exprIfTrue, exprIfFalse);
+        }
+        return expr;
     }
 
     Expr Equality()

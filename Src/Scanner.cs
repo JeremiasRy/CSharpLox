@@ -3,18 +3,13 @@ using System.Diagnostics;
 
 namespace CSharpLox.Src;
 
-public class Scanner
+public class Scanner(string source)
 {
-    string _source;
+    string _source = source;
     List<Token> _tokens = [];
     int _start;
     int _current;
     int _line;
-
-    public Scanner(string source)
-    {
-        _source = source;
-    }
 
     public List<Token> ScanTokens()
     {
@@ -67,6 +62,8 @@ public class Scanner
             case '=': AddToken(Match('=') ? TokenType.EQUAL_EQUAL : TokenType.EQUAL); break;
             case '<': AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
             case '>': AddToken(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
+            case '?': AddToken(TokenType.QUESTION_MARK); break;
+            case ':': AddToken(TokenType.COLON); break;
 
             case '/':
                 {

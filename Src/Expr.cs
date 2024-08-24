@@ -5,6 +5,7 @@ public interface IVisitor<R>
   R VisitGroupingExpr(Grouping expr);
   R VisitLiteralExpr(Literal expr);
   R VisitUnaryExpr(Unary expr);
+  R VisitTernaryExpr(Ternary expr);
 }
 public abstract class Expr
 {
@@ -48,5 +49,16 @@ public class Unary(Token op, Expr right) : Expr
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitUnaryExpr(this);
+  }
+}
+public class Ternary(Expr condition, Expr ifTrue, Expr ifFalse) : Expr
+{
+  public readonly Expr Condition = condition;
+  public readonly Expr IfTrue = ifTrue;
+  public readonly Expr IfFalse = ifFalse;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitTernaryExpr(this);
   }
 }
