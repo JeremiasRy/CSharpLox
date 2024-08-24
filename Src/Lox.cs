@@ -2,14 +2,16 @@ using System.Text;
 namespace CSharpLox.Src;
 public static class Lox
 {
-    private static bool hadError = false;
+    private static bool _hadError = false;
+    private static bool _hadRuntimeError = false;
+    private readonly static Interpreter _interpreter = new();
     public static void RunFile(string pathToFile)
     {
         using var fs = new FileStream(pathToFile, FileMode.Open);
         byte[] bytes = new byte[fs.Length];
         fs.Read(bytes);
         Run(Encoding.UTF8.GetString(bytes));
-        if (hadError)
+        if (_hadError)
         {
             return;
         }
@@ -28,7 +30,7 @@ public static class Lox
                 break;
             }
             Run(input);
-            hadError = false;
+            _hadError = false;
         }
     }
 
@@ -38,11 +40,11 @@ public static class Lox
         List<Token> tokens = scanner.ScanTokens();
         Parser parser = new(tokens);
         Expr? expr = parser.Parse();
-        if (hadError || expr == null)
+        if (_hadError || _hadRuntimeError || expr == null)
         {
             return;
         }
-        Console.WriteLine(new AstPrinter().Print(expr!));
+        _interpreter.Interpret(expr);
     }
 
     public static void Error(int line, string message)
@@ -60,11 +62,15 @@ public static class Lox
             Report(token.Line, " at '" + token.Lexeme + "'", message);
         }
     }
-
     public static void Report(int line, string where, string message)
     {
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("[Line: {0}] Error {1}: {2}", line, where, message);
         Console.ForegroundColor = ConsoleColor.White;
+    }
+    public static void RuntimeError(RuntimeError error)
+    {
+        Console.WriteLine(error.Message + "\n[line: " + error.Token.Line + "]");
+        _hadRuntimeError = true;
     }
 }
