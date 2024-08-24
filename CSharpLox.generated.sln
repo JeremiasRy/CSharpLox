@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.002.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpLox", "CSharpLox.csproj", "{BC3A2E6A-0601-4373-81A6-EBEE5D0B9294}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSharpLox", "CSharpLox.csproj", "{E0BC085F-C4CA-4D93-BEFD-291A65A6F672}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BC3A2E6A-0601-4373-81A6-EBEE5D0B9294}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BC3A2E6A-0601-4373-81A6-EBEE5D0B9294}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BC3A2E6A-0601-4373-81A6-EBEE5D0B9294}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BC3A2E6A-0601-4373-81A6-EBEE5D0B9294}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E0BC085F-C4CA-4D93-BEFD-291A65A6F672}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E0BC085F-C4CA-4D93-BEFD-291A65A6F672}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E0BC085F-C4CA-4D93-BEFD-291A65A6F672}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E0BC085F-C4CA-4D93-BEFD-291A65A6F672}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
