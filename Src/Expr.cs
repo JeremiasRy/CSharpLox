@@ -6,7 +6,7 @@ public interface IVisitor<R>
   R VisitLiteralExpr(Literal expr);
   R VisitUnaryExpr(Unary expr);
 }
-public abstract class Expr 
+public abstract class Expr
 {
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
@@ -31,9 +31,9 @@ public class Grouping(Expr expr) : Expr
     return Visitor.VisitGroupingExpr(this);
   }
 }
-public class Literal(object val) : Expr
+public class Literal(object? val) : Expr
 {
-  public readonly object Val = val;
+  public readonly object? Val = val;
 
   public override R Accept<R>(IVisitor<R> Visitor)
   {
