@@ -2,19 +2,31 @@ namespace CSharpLox.Src;
 public class Parser(List<Token> tokens)
 {
     private class ParseError : Exception { }
-    List<Token> _tokens = tokens;
+    readonly List<Token> _tokens = tokens;
     int _current;
 
     public Expr? Parse()
     {
         try
         {
-            return Expression();
+            return Comma();
         }
         catch (ParseError)
         {
             return null;
         }
+    }
+
+    Expr Comma()
+    {
+        Expr expr = Expression();
+        while (Match(TokenType.COMMA))
+        {
+            Token op = Previous();
+            Expr right = Expression();
+            expr = new Binary(expr, op, right);
+        }
+        return expr;
     }
 
     Expr Expression()
