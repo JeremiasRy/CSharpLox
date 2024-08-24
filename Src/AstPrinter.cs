@@ -28,7 +28,7 @@ public class AstPrinter : IVisitor<string>
 
     public string VisitTernaryExpr(Ternary expr)
     {
-        return Parenthesize("ternary", expr.Condition, expr.IfFalse, expr.IfTrue);
+        return Parenthesize("ternary", expr.Condition, expr.IfTrue, expr.IfFalse);
     }
 
     public string VisitUnaryExpr(Unary expr)
