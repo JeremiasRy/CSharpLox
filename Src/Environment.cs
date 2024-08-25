@@ -3,9 +3,18 @@ public class Environment
 {
     readonly Environment? _enclosing;
     readonly Dictionary<string, object?> _values = [];
-    public void Define(Token name, object? value)
+    public void Define(string name, object? value)
     {
-        _values.Add(name.Lexeme, value);
+        if (_values.TryGetValue(name, out object? initial) && initial == null)
+        {
+            _values[name] = value;
+            return;
+        }
+        else if (initial != null)
+        {
+            Console.WriteLine("Some custom error on to not re-define a variable");
+        }
+        _values.Add(name, value);
     }
     public void Assign(Token name, object value)
     {
