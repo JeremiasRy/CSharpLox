@@ -3,9 +3,9 @@ public class Environment
 {
     readonly Environment? _enclosing;
     readonly Dictionary<string, object?> _values = [];
-    public void Define(string name, object? value)
+    public void Define(Token name, object? value)
     {
-        _values.Add(name, value);
+        _values.Add(name.Lexeme, value);
     }
     public void Assign(Token name, object value)
     {

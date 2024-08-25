@@ -29,6 +29,7 @@ public static class Lox
             {
                 break;
             }
+            _interpreter.SetToReplSession();
             Run(input);
             _hadError = false;
         }

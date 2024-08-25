@@ -1,7 +1,9 @@
 namespace CSharpLox.Src;
 public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 {
+    bool _repl = false;
     Environment _environment = new();
+    public void SetToReplSession() => _repl = true;
     public void Interpret(List<Stmt> statements)
     {
         try
@@ -26,7 +28,12 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
             case TokenType.MINUS:
                 {
                     CheckNumberOperands(expr.Op, left, right);
-                    return (double)left - (double)right;
+                    double result = (double)left - (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.SLASH:
                 {
@@ -35,57 +42,122 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
                     {
                         throw new RuntimeError(expr.Op, "Attempted to divide by zero.");
                     }
-                    return (double)left / (double)right;
+                    double result = (double)left / (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.STAR:
                 {
                     CheckNumberOperands(expr.Op, left, right);
-                    return (double)left * (double)right;
+                    double result = (double)left * (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.PLUS:
                 {
                     if (left is double ld && right is double rd)
                     {
-                        return ld + rd;
+                        double result = ld + rd;
+                        if (_repl)
+                        {
+                            Console.WriteLine(result);
+                        }
+                        return result;
                     }
                     if (left is string ls && right is string rs)
                     {
-                        return ls + rs;
+                        string result = ls + rs;
+                        if (_repl)
+                        {
+                            Console.WriteLine(result);
+                        }
+                        return result;
                     }
                     if (left is string v && right is not string)
                     {
-                        return v + right.ToString();
+                        string result = v + right.ToString();
+                        if (_repl)
+                        {
+                            Console.WriteLine(result);
+                        }
+                        return result;
                     }
                     if (left is not string && right is string rv)
                     {
-                        return left.ToString() + rv;
+                        string result = left.ToString() + rv;
+                        if (_repl)
+                        {
+                            Console.WriteLine(result);
+                        }
+                        return result;
                     }
                     throw new RuntimeError(expr.Op, "Can't perform operation");
                 }
             case TokenType.GREATER:
                 {
                     CheckNumberOperands(expr.Op, left, right);
-                    return (double)left > (double)right;
+                    bool result = (double)left > (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.GREATER_EQUAL:
                 {
                     CheckNumberOperands(expr.Op, left, right);
-                    return (double)left >= (double)right;
+                    bool result = (double)left >= (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.LESS:
                 {
                     CheckNumberOperands(expr.Op, left, right);
-                    return (double)left < (double)right;
+                    bool result = (double)left < (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.LESS_EQUAL:
                 {
                     CheckNumberOperands(expr.Op, left, right);
-                    return (double)left <= (double)right;
+                    bool result = (double)left <= (double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.EQUAL_EQUAL:
-                return IsEqual(left, right);
+                {
+                    bool result = IsEqual(left, right);
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return !IsEqual(left, right);
+                }
+
             case TokenType.BANG_EQUAL:
-                return !IsEqual(left, right);
+                {
+                    bool result = !IsEqual(left, right);
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
+                }
         };
         return null;
     }
@@ -119,10 +191,24 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
             case TokenType.MINUS:
                 {
                     CheckNumberOperand(expr.Op, right);
-                    return -(double)right;
+
+                    double result = -(double)right;
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
                 }
             case TokenType.BANG:
-                return !IsTruthy(right);
+                {
+                    bool result = !IsTruthy(right);
+                    if (_repl)
+                    {
+                        Console.WriteLine(result);
+                    }
+                    return result;
+                }
+
         }
         return null;
     }
@@ -211,7 +297,11 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     }
     public ThankYou? VisitExprStmtStmt(ExprStmt stmt)
     {
-        Evaluate(stmt.Expression);
+        object result = Evaluate(stmt.Expression);
+        if (_repl)
+        {
+            Console.WriteLine(Stringify(result));
+        }
         return ThankYou.Bye;
     }
     public ThankYou? VisitPrintStmt(Print stmt)
@@ -229,7 +319,11 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
             value = Evaluate(stmt.Initializer);
         }
 
-        _environment.Define(stmt.Name.Lexeme, value);
+        _environment.Define(stmt.Name, value);
+        if (_repl)
+        {
+            Console.WriteLine(value);
+        }
         return ThankYou.Bye;
     }
 
@@ -241,7 +335,11 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     public object? VisitAssignExpr(Assign expr)
     {
         object? value = Evaluate(expr.Value);
-        _environment.Define(expr.Name.Lexeme, value);
+        _environment.Define(expr.Name, value);
+        if (_repl)
+        {
+            Console.WriteLine(value);
+        }
         return ThankYou.Bye;
     }
 
