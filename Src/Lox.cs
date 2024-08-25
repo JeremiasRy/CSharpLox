@@ -70,7 +70,9 @@ public static class Lox
     }
     public static void RuntimeError(RuntimeError error)
     {
-        Console.WriteLine(error.Message + "\n[line: " + error.Token.Line + "]");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("[line: " + error.Token.Line + "]: " + error.Message);
+        Console.ForegroundColor = ConsoleColor.White;
         _hadRuntimeError = true;
     }
 }

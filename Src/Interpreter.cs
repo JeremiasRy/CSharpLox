@@ -28,6 +28,10 @@ public class Interpreter : IVisitor<object>
             case TokenType.SLASH:
                 {
                     CheckNumberOperands(expr.Op, left, right);
+                    if (right is double r && r == 0)
+                    {
+                        throw new RuntimeError(expr.Op, "Attempted to divide by zero.");
+                    }
                     return (double)left / (double)right;
                 }
             case TokenType.STAR:
@@ -45,7 +49,15 @@ public class Interpreter : IVisitor<object>
                     {
                         return ls + rs;
                     }
-                    throw new RuntimeError(expr.Op, "Opreands must be two numbers or two strings");
+                    if (left is string v && right is not string)
+                    {
+                        return v + right.ToString();
+                    }
+                    if (left is not string && right is string rv)
+                    {
+                        return left.ToString() + rv;
+                    }
+                    throw new RuntimeError(expr.Op, "Can't perform operation");
                 }
             case TokenType.GREATER:
                 {
@@ -84,7 +96,16 @@ public class Interpreter : IVisitor<object>
     }
     public object VisitTernaryExpr(Ternary expr)
     {
-        throw new NotImplementedException();
+        object obj = expr.Condition.Accept(this);
+
+        if (IsTruthy(obj))
+        {
+            return expr.IfTrue.Accept(this);
+        }
+        else
+        {
+            return expr.IfFalse.Accept(this);
+        }
     }
     public object? VisitUnaryExpr(Unary expr)
     {
