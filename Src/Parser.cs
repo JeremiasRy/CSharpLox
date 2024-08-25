@@ -1,4 +1,6 @@
 using System.Data;
+using System.Linq.Expressions;
+using System.Xml;
 
 namespace CSharpLox.Src;
 public class Parser(List<Token> tokens)
@@ -12,10 +14,41 @@ public class Parser(List<Token> tokens)
         List<Stmt> statements = [];
         while (!IsAtEnd())
         {
-            statements.Add(Statement());
+            statements.Add(Declaration());
         }
 
         return statements;
+    }
+
+    private Stmt Declaration()
+    {
+        try
+        {
+            if (Match(TokenType.VAR))
+            {
+                return VarDeclaration();
+            }
+            return Statement();
+        }
+        catch
+        {
+            Synchronize();
+            return null;
+        }
+    }
+
+    private Stmt VarDeclaration()
+    {
+        Token name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+        Expr? initializer = null;
+        if (Match(TokenType.EQUAL))
+        {
+            initializer = Comma();
+        }
+
+        Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+        return new Var(name, initializer);
     }
 
     private Stmt Statement()
@@ -150,6 +183,10 @@ public class Parser(List<Token> tokens)
         {
             return new Literal(Previous().Literal);
         }
+        if (Match(TokenType.IDENTIFIER))
+        {
+            return new Variable(Previous());
+        }
         if (Match(TokenType.LEFT_PAREN))
         {
             Expr expr = Expression();
@@ -159,12 +196,11 @@ public class Parser(List<Token> tokens)
         throw Error(Peek(), "Expect expression.");
     }
 
-    private void Consume(TokenType type, string message)
+    private Token Consume(TokenType type, string message)
     {
         if (Check(type))
         {
-            Advance();
-            return;
+            return Advance();
         }
         throw Error(Peek(), message);
     }

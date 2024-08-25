@@ -203,4 +203,14 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         Console.WriteLine(Stringify(value));
         return ThankYou.Bye;
     }
+
+    public ThankYou? VisitVarStmt(Var stmt)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitVariableExpr(Variable expr)
+    {
+        throw new NotImplementedException();
+    }
 }

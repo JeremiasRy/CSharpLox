@@ -1,14 +1,15 @@
 ﻿namespace CSharpLox.Src;
-public abstract class Expr
+public abstract class Expr 
 {
   public interface IVisitor<R>
-  {
-    abstract R? VisitBinaryExpr(Binary expr);
-    abstract R? VisitGroupingExpr(Grouping expr);
-    abstract R? VisitLiteralExpr(Literal expr);
-    abstract R? VisitUnaryExpr(Unary expr);
-    abstract R? VisitTernaryExpr(Ternary expr);
-  }
+    {
+      abstract R? VisitBinaryExpr(Binary expr);
+      abstract R? VisitGroupingExpr(Grouping expr);
+      abstract R? VisitLiteralExpr(Literal expr);
+      abstract R? VisitVariableExpr(Variable expr);
+      abstract R? VisitUnaryExpr(Unary expr);
+      abstract R? VisitTernaryExpr(Ternary expr);
+    }
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
 
@@ -39,6 +40,15 @@ public class Literal(object? val) : Expr
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitLiteralExpr(this);
+  }
+}
+public class Variable(Token name) : Expr
+{
+  public readonly Token Name = name;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitVariableExpr(this);
   }
 }
 public class Unary(Token op, Expr right) : Expr
