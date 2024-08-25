@@ -1,14 +1,10 @@
-using System.Data;
-using System.Linq.Expressions;
-using System.Xml;
-
 namespace CSharpLox.Src;
 public class Parser(List<Token> tokens)
 {
     private class ParseError : Exception { }
     readonly List<Token> _tokens = tokens;
     int _current;
-
+    // ### Statements
     public List<Stmt> Parse()
     {
         List<Stmt> statements = [];
@@ -19,7 +15,6 @@ public class Parser(List<Token> tokens)
 
         return statements;
     }
-
     private Stmt Declaration()
     {
         try
@@ -37,7 +32,7 @@ public class Parser(List<Token> tokens)
         }
     }
 
-    private Stmt VarDeclaration()
+    private Var VarDeclaration()
     {
         Token name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
 
@@ -57,8 +52,24 @@ public class Parser(List<Token> tokens)
         {
             return PrintStatement();
         }
+        if (Match(TokenType.LEFT_BRACE))
+        {
+            return new Block(BlockScope());
+        }
 
         return ExpressionStatement();
+    }
+
+    List<Stmt> BlockScope()
+    {
+        List<Stmt> statements = [];
+
+        while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+        Consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+        return statements;
     }
 
     private ExprStmt ExpressionStatement()
@@ -75,6 +86,7 @@ public class Parser(List<Token> tokens)
         return new Print(expr);
     }
 
+    // ### Expressions
     Expr Comma()
     {
         Expr expr = Expression();
@@ -89,7 +101,26 @@ public class Parser(List<Token> tokens)
 
     Expr Expression()
     {
-        return Ternary();
+        return Assignment();
+    }
+
+    private Expr Assignment()
+    {
+        Expr expr = Ternary();
+
+        if (Match(TokenType.EQUAL))
+        {
+            Token equals = Previous();
+            Expr value = Assignment();
+
+            if (expr is Variable varExpr)
+            {
+                Token name = varExpr.Name;
+                return new Assign(name, value);
+            }
+            Error(equals, "Invalid assignment target.");
+        }
+        return expr;
     }
 
     Expr Ternary()

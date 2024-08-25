@@ -1,6 +1,7 @@
 namespace CSharpLox.Src;
 public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 {
+    Environment _environment = new();
     public void Interpret(List<Stmt> statements)
     {
         try
@@ -145,6 +146,23 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     {
         stmt.Accept(this);
     }
+    private void ExecuteBlockStatement(List<Stmt> statements, Environment environment)
+    {
+        Environment prev = _environment;
+        try
+        {
+            _environment = environment;
+            foreach (Stmt statement in statements)
+            {
+                Execute(statement);
+            }
+        }
+        finally
+        {
+            _environment = prev;
+        }
+    }
+
     private static bool IsEqual(object a, object b)
     {
         if (a == null && b == null)
@@ -196,7 +214,6 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         Evaluate(stmt.Expression);
         return ThankYou.Bye;
     }
-
     public ThankYou? VisitPrintStmt(Print stmt)
     {
         object value = Evaluate(stmt.Expression);
@@ -206,11 +223,31 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 
     public ThankYou? VisitVarStmt(Var stmt)
     {
-        throw new NotImplementedException();
+        object? value = null;
+        if (stmt.Initializer != null)
+        {
+            value = Evaluate(stmt.Initializer);
+        }
+
+        _environment.Define(stmt.Name.Lexeme, value);
+        return ThankYou.Bye;
     }
 
     public object? VisitVariableExpr(Variable expr)
     {
-        throw new NotImplementedException();
+        return _environment.Get(expr.Name);
+    }
+
+    public object? VisitAssignExpr(Assign expr)
+    {
+        object? value = Evaluate(expr.Value);
+        _environment.Define(expr.Name.Lexeme, value);
+        return ThankYou.Bye;
+    }
+
+    public ThankYou? VisitBlockStmt(Block stmt)
+    {
+        ExecuteBlockStatement(stmt.Statements, new Environment(_environment));
+        return ThankYou.Bye;
     }
 }

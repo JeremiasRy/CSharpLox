@@ -44,7 +44,17 @@ public static class Lox
         {
             return;
         }
-        _interpreter.Interpret(statements);
+        try
+        {
+            _interpreter.Interpret(statements);
+        }
+        catch (NullReferenceException)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Couldn't execute given code.");
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
     }
 
     public static void Error(int line, string message)

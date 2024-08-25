@@ -3,6 +3,7 @@ public abstract class Stmt
 {
   public interface IVisitor<R>
     {
+      abstract R? VisitBlockStmt(Block stmt);
       abstract R? VisitExprStmtStmt(ExprStmt stmt);
       abstract R? VisitPrintStmt(Print stmt);
       abstract R? VisitVarStmt(Var stmt);
@@ -10,6 +11,15 @@ public abstract class Stmt
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
 
+public class Block(List<Stmt> statements) : Stmt
+{
+  public readonly List<Stmt> Statements = statements;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitBlockStmt(this);
+  }
+}
 public class ExprStmt(Expr expression) : Stmt
 {
   public readonly Expr Expression = expression;
