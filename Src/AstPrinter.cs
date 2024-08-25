@@ -1,7 +1,7 @@
 using System.Text;
 namespace CSharpLox.Src;
 
-public class AstPrinter : IVisitor<string>
+public class AstPrinter : Expr.IVisitor<string>
 {
     public string Print(Expr expr)
     {

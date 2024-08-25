@@ -1,12 +1,14 @@
 namespace CSharpLox.Src;
-public class Interpreter : Expr.IVisitor<object>
+public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 {
-    public void Interpret(Expr expression)
+    public void Interpret(List<Stmt> statements)
     {
         try
         {
-            object value = Evaluate(expression);
-            Console.WriteLine(Stringify(value));
+            foreach (Stmt stmt in statements)
+            {
+                Execute(stmt);
+            }
         }
         catch (RuntimeError e)
         {
@@ -139,6 +141,10 @@ public class Interpreter : Expr.IVisitor<object>
     {
         return expr.Accept(this);
     }
+    private void Execute(Stmt stmt)
+    {
+        stmt.Accept(this);
+    }
     private static bool IsEqual(object a, object b)
     {
         if (a == null && b == null)
@@ -184,5 +190,17 @@ public class Interpreter : Expr.IVisitor<object>
             return;
         }
         throw new RuntimeError(op, "Operands must be numbers.");
+    }
+    public ThankYou? VisitExprStmtStmt(ExprStmt stmt)
+    {
+        Evaluate(stmt.Expression);
+        return ThankYou.Bye;
+    }
+
+    public ThankYou? VisitPrintStmt(Print stmt)
+    {
+        object value = Evaluate(stmt.Expression);
+        Console.WriteLine(Stringify(value));
+        return ThankYou.Bye;
     }
 }

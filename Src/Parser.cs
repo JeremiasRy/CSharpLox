@@ -1,3 +1,5 @@
+using System.Data;
+
 namespace CSharpLox.Src;
 public class Parser(List<Token> tokens)
 {
@@ -5,16 +7,39 @@ public class Parser(List<Token> tokens)
     readonly List<Token> _tokens = tokens;
     int _current;
 
-    public Expr? Parse()
+    public List<Stmt> Parse()
     {
-        try
+        List<Stmt> statements = [];
+        while (!IsAtEnd())
         {
-            return Comma();
+            statements.Add(Statement());
         }
-        catch (ParseError)
+
+        return statements;
+    }
+
+    private Stmt Statement()
+    {
+        if (Match(TokenType.PRINT))
         {
-            return null;
+            return PrintStatement();
         }
+
+        return ExpressionStatement();
+    }
+
+    private ExprStmt ExpressionStatement()
+    {
+        Expr expr = Comma();
+        Consume(TokenType.SEMICOLON, "Expect ';' after expression.");
+        return new ExprStmt(expr);
+    }
+
+    private Print PrintStatement()
+    {
+        Expr expr = Comma();
+        Consume(TokenType.SEMICOLON, "Expect ';' after value.");
+        return new Print(expr);
     }
 
     Expr Comma()

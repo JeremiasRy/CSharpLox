@@ -39,12 +39,12 @@ public static class Lox
         Scanner scanner = new(src);
         List<Token> tokens = scanner.ScanTokens();
         Parser parser = new(tokens);
-        Expr? expr = parser.Parse();
-        if (_hadError || _hadRuntimeError || expr == null)
+        List<Stmt> statements = parser.Parse();
+        if (_hadError || _hadRuntimeError || statements.Count == 0)
         {
             return;
         }
-        _interpreter.Interpret(expr);
+        _interpreter.Interpret(statements);
     }
 
     public static void Error(int line, string message)
