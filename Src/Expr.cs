@@ -1,14 +1,14 @@
 ﻿namespace CSharpLox.Src;
-public interface IVisitor<R>
-{
-  R? VisitBinaryExpr(Binary expr);
-  R? VisitGroupingExpr(Grouping expr);
-  R? VisitLiteralExpr(Literal expr);
-  R? VisitUnaryExpr(Unary expr);
-  R? VisitTernaryExpr(Ternary expr);
-}
 public abstract class Expr
 {
+  public interface IVisitor<R>
+  {
+    abstract R? VisitBinaryExpr(Binary expr);
+    abstract R? VisitGroupingExpr(Grouping expr);
+    abstract R? VisitLiteralExpr(Literal expr);
+    abstract R? VisitUnaryExpr(Unary expr);
+    abstract R? VisitTernaryExpr(Ternary expr);
+  }
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
 

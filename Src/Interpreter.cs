@@ -1,5 +1,5 @@
 namespace CSharpLox.Src;
-public class Interpreter : IVisitor<object>
+public class Interpreter : Expr.IVisitor<object>
 {
     public void Interpret(Expr expression)
     {
