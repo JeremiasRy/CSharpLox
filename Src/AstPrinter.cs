@@ -32,6 +32,11 @@ public class AstPrinter : Expr.IVisitor<string>
         return expr.Val.ToString() ?? "nil";
     }
 
+    public string? VisitLogicalExpr(Logical expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public string VisitTernaryExpr(Ternary expr)
     {
         return Parenthesize("ternary", expr.Condition, expr.IfTrue, expr.IfFalse);

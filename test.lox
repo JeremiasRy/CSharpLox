@@ -1,0 +1,18 @@
+for (var i = 0; i < 5000; i = i + 1) {
+    print "i is now: " + i;
+    if (i == 10) {
+        print "i hit 10, we'll break now";
+        break;
+    }
+}
+print "Hopefuly we broke out of the loop!";
+print "we'll start the next one now...";
+
+for (var i = 0; i < 100; i = i + 1) {
+    if (i > 10 and i < 50) {
+        continue;
+    }
+    print "i is " + i;
+}
+
+print "we finished!";

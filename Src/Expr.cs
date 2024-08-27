@@ -2,15 +2,16 @@
 public abstract class Expr 
 {
   public interface IVisitor<R>
-    {
-      abstract R? VisitAssignExpr(Assign expr);
-      abstract R? VisitBinaryExpr(Binary expr);
-      abstract R? VisitGroupingExpr(Grouping expr);
-      abstract R? VisitLiteralExpr(Literal expr);
-      abstract R? VisitVariableExpr(Variable expr);
-      abstract R? VisitUnaryExpr(Unary expr);
-      abstract R? VisitTernaryExpr(Ternary expr);
-    }
+  {
+    abstract R? VisitAssignExpr(Assign expr);
+    abstract R? VisitBinaryExpr(Binary expr);
+    abstract R? VisitGroupingExpr(Grouping expr);
+    abstract R? VisitLiteralExpr(Literal expr);
+    abstract R? VisitLogicalExpr(Logical expr);
+    abstract R? VisitVariableExpr(Variable expr);
+    abstract R? VisitUnaryExpr(Unary expr);
+    abstract R? VisitTernaryExpr(Ternary expr);
+  }
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
 
@@ -51,6 +52,17 @@ public class Literal(object? val) : Expr
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitLiteralExpr(this);
+  }
+}
+public class Logical(Expr left, Token op, Expr right) : Expr
+{
+  public readonly Expr Left = left;
+  public readonly Token Op = op;
+  public readonly Expr Right = right;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitLogicalExpr(this);
   }
 }
 public class Variable(Token name) : Expr

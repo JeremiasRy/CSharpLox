@@ -11,7 +11,6 @@ public class Token(TokenType type, string lexeme, object? literal, int line)
     {
         return $"{Type} {Lexeme} {Literal}";
     }
-
 }
 
 public enum TokenType
@@ -27,6 +26,7 @@ public enum TokenType
     // Keywords
     AND, CLASS, ELSE, FALSE, FUN, FOR, IF, NIL, OR,
     PRINT, RETURN, SUPER, THIS, TRUE, VAR, WHILE,
+    BREAK, CONTINUE,
 
     EOF
 }

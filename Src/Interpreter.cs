@@ -1,9 +1,13 @@
+using System.Diagnostics;
+
 namespace CSharpLox.Src;
 public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 {
     bool _repl = false;
     Environment _environment = new();
+
     public void SetToReplSession() => _repl = true;
+
     public void Interpret(List<Stmt> statements)
     {
         try
@@ -18,6 +22,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
             Lox.RuntimeError(e);
         }
     }
+
     public object? VisitBinaryExpr(Binary expr)
     {
         object left = Evaluate(expr.Left);
@@ -96,14 +101,17 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         };
         return null;
     }
+
     public object VisitGroupingExpr(Grouping expr)
     {
         return Evaluate(expr.Expr);
     }
+
     public object? VisitLiteralExpr(Literal expr)
     {
         return expr.Val;
     }
+
     public object VisitTernaryExpr(Ternary expr)
     {
         object obj = expr.Condition.Accept(this);
@@ -117,6 +125,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
             return expr.IfFalse.Accept(this);
         }
     }
+
     public object? VisitUnaryExpr(Unary expr)
     {
         object right = Evaluate(expr.Right);
@@ -136,6 +145,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         return null;
     }
+
     static private bool IsTruthy(object obj)
     {
         if (obj == null)
@@ -148,14 +158,17 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         return true;
     }
+
     private object Evaluate(Expr expr)
     {
         return expr.Accept(this);
     }
+
     private void Execute(Stmt stmt)
     {
         stmt.Accept(this);
     }
+
     private void ExecuteBlockStatement(List<Stmt> statements, Environment environment)
     {
         Environment prev = _environment;
@@ -186,6 +199,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 
         return a.Equals(b);
     }
+
     private static string Stringify(object obj)
     {
         if (obj == null)
@@ -203,6 +217,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         return obj.ToString() ?? "nil";
     }
+
     private static void CheckNumberOperand(Token op, object operand)
     {
         if (operand is double)
@@ -211,6 +226,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         throw new RuntimeError(op, "Operand must be a number");
     }
+
     private static void CheckNumberOperands(Token op, object a, object b)
     {
         if (a is double && b is double)
@@ -219,6 +235,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         throw new RuntimeError(op, "Operands must be numbers.");
     }
+
     public ThankYou? VisitExprStmtStmt(ExprStmt stmt)
     {
         object result = Evaluate(stmt.Expression);
@@ -228,12 +245,14 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         return ThankYou.Bye;
     }
+
     public ThankYou? VisitPrintStmt(Print stmt)
     {
         object value = Evaluate(stmt.Expression);
         Console.WriteLine(Stringify(value));
         return ThankYou.Bye;
     }
+
     public ThankYou? VisitVarStmt(Var stmt)
     {
         object? value = null;
@@ -249,6 +268,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         }
         return ThankYou.Bye;
     }
+
     public object? VisitVariableExpr(Variable expr)
     {
         object? variable = _environment.Get(expr.Name);
@@ -273,6 +293,69 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     public ThankYou? VisitBlockStmt(Block stmt)
     {
         ExecuteBlockStatement(stmt.Statements, new Environment(_environment));
+        return ThankYou.Bye;
+    }
+
+    public ThankYou? VisitIfStmt(If stmt)
+    {
+        if (IsTruthy(Evaluate(stmt.Condition)))
+        {
+            Execute(stmt.ThenBranch);
+        }
+        else if (stmt.ElseBranch != null)
+        {
+            Execute(stmt.ElseBranch);
+        }
+        return ThankYou.Bye;
+    }
+
+    public object? VisitLogicalExpr(Logical expr)
+    {
+        object left = Evaluate(expr.Left);
+        if (expr.Op.Type == TokenType.OR)
+        {
+            if (IsTruthy(left))
+            {
+                return left;
+            }
+        }
+        else
+        {
+            if (!IsTruthy(left))
+            {
+                return left;
+            }
+        }
+        return Evaluate(expr.Right);
+    }
+
+    public ThankYou? VisitWhileStmt(While stmt)
+    {
+        object condition = Evaluate(stmt.Condition);
+        while (IsTruthy(condition))
+        {
+            try
+            {
+                Execute(stmt.Body);
+            }
+            catch (BreakException)
+            {
+                break;
+            }
+            condition = Evaluate(stmt.Condition);
+        }
+        return ThankYou.Bye;
+    }
+
+    public ThankYou? VisitBreakStmt(Break stmt)
+    {
+        throw new BreakException();
+    }
+
+    public ThankYou? VisitContinueStmt(Continue stmt)
+    {
+        // throw new ContinueException();
+        Console.WriteLine("Hi it's the intepreter, we have a continue statement lying around");
         return ThankYou.Bye;
     }
 }

@@ -4,6 +4,7 @@ public class Parser(List<Token> tokens)
     private class ParseError : Exception { }
     readonly List<Token> _tokens = tokens;
     int _current;
+    bool _loop = false;
     // ### Statements
     public List<Stmt> Parse()
     {
@@ -48,16 +49,124 @@ public class Parser(List<Token> tokens)
 
     private Stmt Statement()
     {
+        if (Match(TokenType.BREAK))
+        {
+            Token token = Previous();
+            Consume(TokenType.SEMICOLON, "Expect ';' after statement");
+            if (!_loop)
+            {
+                Error(token, "Can't use 'break' outside of loop");
+            }
+            return new Break(token);
+        }
+        if (Match(TokenType.CONTINUE))
+        {
+            Token token = Previous();
+            Consume(TokenType.SEMICOLON, "Expect ';' after statement");
+            if (!_loop)
+            {
+                Error(token, "Can't use 'continue' outside of a loop");
+            }
+            return new Continue(token);
+        }
         if (Match(TokenType.PRINT))
         {
             return PrintStatement();
+        }
+        if (Match(TokenType.FOR))
+        {
+            return ForStatement();
+        }
+        if (Match(TokenType.WHILE))
+        {
+            return WhileStatement();
         }
         if (Match(TokenType.LEFT_BRACE))
         {
             return new Block(BlockScope());
         }
+        if (Match(TokenType.IF))
+        {
+            return IfStatement();
+        }
 
         return ExpressionStatement();
+    }
+
+    private While WhileStatement()
+    {
+        _loop = true;
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'");
+        Expr condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after while condition");
+
+        Stmt body = Statement();
+        _loop = false;
+        return new While(condition, body);
+    }
+    private Stmt ForStatement()
+    {
+        _loop = true;
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'for'");
+        Stmt? initializer;
+        if (Match(TokenType.SEMICOLON))
+        {
+            initializer = null;
+        }
+        else if (Match(TokenType.VAR))
+        {
+            initializer = VarDeclaration();
+        }
+        else
+        {
+            initializer = ExpressionStatement();
+        }
+
+        Expr? condition = null;
+        if (!Check(TokenType.SEMICOLON))
+        {
+            condition = Expression();
+        }
+        Consume(TokenType.SEMICOLON, "Expect ';' after loop condition");
+        Expr? increment = null;
+        if (!Check(TokenType.RIGHT_PAREN))
+        {
+            increment = Expression();
+        }
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after for clauses");
+
+        Stmt body = Statement();
+
+        if (increment != null)
+        {
+            body = new Block([body, new ExprStmt(increment)]);
+        }
+
+        condition ??= new Literal(true);
+
+        body = new While(condition, body);
+
+        if (initializer != null)
+        {
+            body = new Block([initializer, body]);
+        }
+        _loop = false;
+        return body;
+    }
+
+    private If IfStatement()
+    {
+        Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'");
+        Expr condition = Expression();
+        Consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition");
+
+        Stmt thenBranch = Statement();
+        Stmt? elseBranch = null;
+        if (Match(TokenType.ELSE))
+        {
+            elseBranch = Statement();
+        }
+        return new If(condition, thenBranch, elseBranch);
     }
 
     List<Stmt> BlockScope()
@@ -106,7 +215,7 @@ public class Parser(List<Token> tokens)
 
     private Expr Assignment()
     {
-        Expr expr = Ternary();
+        Expr expr = Or();
 
         if (Match(TokenType.EQUAL))
         {
@@ -119,6 +228,30 @@ public class Parser(List<Token> tokens)
                 return new Assign(name, value);
             }
             Error(equals, "Invalid assignment target.");
+        }
+        return expr;
+    }
+
+    Expr Or()
+    {
+        Expr expr = And();
+        if (Match(TokenType.OR))
+        {
+            Token op = Previous();
+            Expr right = And();
+            expr = new Logical(expr, op, right);
+        }
+        return expr;
+    }
+
+    Expr And()
+    {
+        Expr expr = Ternary();
+        if (Match(TokenType.AND))
+        {
+            Token op = Previous();
+            Expr right = Ternary();
+            expr = new Logical(expr, op, right);
         }
         return expr;
     }

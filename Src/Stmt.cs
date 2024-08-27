@@ -2,12 +2,16 @@
 public abstract class Stmt 
 {
   public interface IVisitor<R>
-    {
-      abstract R? VisitBlockStmt(Block stmt);
-      abstract R? VisitExprStmtStmt(ExprStmt stmt);
-      abstract R? VisitPrintStmt(Print stmt);
-      abstract R? VisitVarStmt(Var stmt);
-    }
+  {
+    abstract R? VisitBlockStmt(Block stmt);
+    abstract R? VisitExprStmtStmt(ExprStmt stmt);
+    abstract R? VisitIfStmt(If stmt);
+    abstract R? VisitPrintStmt(Print stmt);
+    abstract R? VisitWhileStmt(While stmt);
+    abstract R? VisitVarStmt(Var stmt);
+    abstract R? VisitBreakStmt(Break stmt);
+    abstract R? VisitContinueStmt(Continue stmt);
+  }
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
 
@@ -29,6 +33,17 @@ public class ExprStmt(Expr expression) : Stmt
     return Visitor.VisitExprStmtStmt(this);
   }
 }
+public class If(Expr condition, Stmt thenBranch, Stmt? elseBranch) : Stmt
+{
+  public readonly Expr Condition = condition;
+  public readonly Stmt ThenBranch = thenBranch;
+  public readonly Stmt? ElseBranch = elseBranch;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitIfStmt(this);
+  }
+}
 public class Print(Expr expression) : Stmt
 {
   public readonly Expr Expression = expression;
@@ -36,6 +51,16 @@ public class Print(Expr expression) : Stmt
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitPrintStmt(this);
+  }
+}
+public class While(Expr condition, Stmt body) : Stmt
+{
+  public readonly Expr Condition = condition;
+  public readonly Stmt Body = body;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitWhileStmt(this);
   }
 }
 public class Var(Token name, Expr? initializer) : Stmt
@@ -46,5 +71,23 @@ public class Var(Token name, Expr? initializer) : Stmt
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitVarStmt(this);
+  }
+}
+public class Break(Token name) : Stmt
+{
+  public readonly Token Name = name;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitBreakStmt(this);
+  }
+}
+public class Continue(Token name) : Stmt
+{
+  public readonly Token Name = name;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitContinueStmt(this);
   }
 }

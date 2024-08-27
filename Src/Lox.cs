@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 namespace CSharpLox.Src;
 public static class Lox
