@@ -16,3 +16,10 @@ for (var i = 0; i < 100; i = i + 1) {
 }
 
 print "we finished!";
+
+fun add(first, second) {
+    print first + second;
+}
+
+add(1234345, 7878);
+add("Jeremias ", "Ryttäri");
