@@ -371,7 +371,7 @@ public class Parser(List<Token> tokens)
                 break;
             }
         }
-        return Primary();
+        return expr;
     }
 
     private Call FinishCall(Expr callee)
