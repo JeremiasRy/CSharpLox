@@ -4,8 +4,15 @@ namespace CSharpLox.Src;
 public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 {
     bool _repl = false;
-    Environment _environment = new();
+    Environment _environment;
+    public Environment globals;
 
+    public Interpreter()
+    {
+        _environment = new Environment();
+        _environment.Define("clock", new Clock());
+        globals = new Environment(_environment);
+    }
     public void SetToReplSession() => _repl = true;
 
     public void Interpret(List<Stmt> statements)
@@ -169,7 +176,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         stmt.Accept(this);
     }
 
-    private void ExecuteBlockStatement(List<Stmt> statements, Environment environment)
+    public void ExecuteBlockStatement(List<Stmt> statements, Environment environment)
     {
         Environment prev = _environment;
         try
@@ -356,6 +363,34 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     {
         // throw new ContinueException();
         Console.WriteLine("Hi it's the intepreter, we have a continue statement lying around");
+        return ThankYou.Bye;
+    }
+
+    public object? VisitCallExpr(Call expr)
+    {
+        object callee = Evaluate(expr.Callee);
+        List<object> arguments = new(expr.Arguments.Count);
+        foreach (Expr arg in expr.Arguments)
+        {
+            arguments.Add(Evaluate(arg));
+        }
+        if (callee is not ILoxCallable)
+        {
+            throw new RuntimeError(expr.Paren, "Can only call functions and classes");
+        }
+
+        ILoxCallable function = (ILoxCallable)callee;
+        if (arguments.Count != function.Arity())
+        {
+            throw new RuntimeError(expr.Paren, $"Expected ${function.Arity()} arguments but got ${arguments.Count}");
+        }
+        return function.Call(this, arguments);
+    }
+
+    public ThankYou? VisitFunctionStmtStmt(FunctionStmt stmt)
+    {
+        LoxFunction function = new(stmt);
+        _environment.Define(stmt.Name.Lexeme, function);
         return ThankYou.Bye;
     }
 }

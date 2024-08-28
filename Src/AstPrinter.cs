@@ -18,6 +18,11 @@ public class AstPrinter : Expr.IVisitor<string>
         return Parenthesize(expr.Op.Lexeme, expr.Left, expr.Right);
     }
 
+    public string? VisitCallExpr(Call expr)
+    {
+        throw new NotImplementedException();
+    }
+
     public string VisitGroupingExpr(Grouping expr)
     {
         return Parenthesize("group", expr.Expr);

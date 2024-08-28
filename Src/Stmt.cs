@@ -5,6 +5,7 @@ public abstract class Stmt
   {
     abstract R? VisitBlockStmt(Block stmt);
     abstract R? VisitExprStmtStmt(ExprStmt stmt);
+    abstract R? VisitFunctionStmtStmt(FunctionStmt stmt);
     abstract R? VisitIfStmt(If stmt);
     abstract R? VisitPrintStmt(Print stmt);
     abstract R? VisitWhileStmt(While stmt);
@@ -31,6 +32,17 @@ public class ExprStmt(Expr expression) : Stmt
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitExprStmtStmt(this);
+  }
+}
+public class FunctionStmt(Token name, List<Token> prms, List<Stmt> body) : Stmt
+{
+  public readonly Token Name = name;
+  public readonly List<Token> Prms = prms;
+  public readonly List<Stmt> Body = body;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitFunctionStmtStmt(this);
   }
 }
 public class If(Expr condition, Stmt thenBranch, Stmt? elseBranch) : Stmt

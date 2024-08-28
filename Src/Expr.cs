@@ -5,6 +5,7 @@ public abstract class Expr
   {
     abstract R? VisitAssignExpr(Assign expr);
     abstract R? VisitBinaryExpr(Binary expr);
+    abstract R? VisitCallExpr(Call expr);
     abstract R? VisitGroupingExpr(Grouping expr);
     abstract R? VisitLiteralExpr(Literal expr);
     abstract R? VisitLogicalExpr(Logical expr);
@@ -34,6 +35,17 @@ public class Binary(Expr left, Token op, Expr right) : Expr
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitBinaryExpr(this);
+  }
+}
+public class Call(Expr callee, Token paren, List<Expr> arguments) : Expr
+{
+  public readonly Expr Callee = callee;
+  public readonly Token Paren = paren;
+  public readonly List<Expr> Arguments = arguments;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitCallExpr(this);
   }
 }
 public class Grouping(Expr expr) : Expr
