@@ -9,14 +9,21 @@ public class LoxFunction(FunctionStmt declaration) : ILoxCallable
         return _declaration.Prms.Count();
     }
 
-    public object Call(Interpreter interpreter, List<object> arguments)
+    public object? Call(Interpreter interpreter, List<object> arguments)
     {
         var environment = new Environment(interpreter.globals);
         for (int i = 0; i < arguments.Count; i++)
         {
             environment.Define(_declaration.Prms.ElementAt(i).Lexeme, arguments.ElementAt(i));
         }
-        interpreter.ExecuteBlockStatement(_declaration.Body, environment);
+        try
+        {
+            interpreter.ExecuteBlockStatement(_declaration.Body, environment);
+        }
+        catch (Return returnValue)
+        {
+            return returnValue.Value;
+        }
         return null;
     }
     public override string ToString()

@@ -393,4 +393,13 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         _environment.Define(stmt.Name.Lexeme, function);
         return ThankYou.Bye;
     }
+    public ThankYou? VisitReturnStmtStmt(ReturnStmt stmt)
+    {
+        object? value = null;
+        if (stmt.Value != null)
+        {
+            value = Evaluate(stmt.Value);
+        }
+        throw new Return(value);
+    }
 }

@@ -5,6 +5,7 @@ public class Parser(List<Token> tokens)
     readonly List<Token> _tokens = tokens;
     int _current;
     bool _loop = false;
+
     // ### Statements
     public List<Stmt> Parse()
     {
@@ -53,6 +54,10 @@ public class Parser(List<Token> tokens)
         {
             return Function("function");
         }
+        if (Match(TokenType.RETURN))
+        {
+            return ReturnStatement();
+        }
         if (Match(TokenType.BREAK))
         {
             Token token = Previous();
@@ -95,6 +100,18 @@ public class Parser(List<Token> tokens)
         }
 
         return ExpressionStatement();
+    }
+
+    private Stmt ReturnStatement()
+    {
+        Token keyword = Previous();
+        Expr? value = null;
+        if (!Check(TokenType.SEMICOLON))
+        {
+            value = Expression();
+        }
+        Consume(TokenType.SEMICOLON, "Expect ';' after return value");
+        return new ReturnStmt(keyword, value);
     }
 
     private FunctionStmt Function(string kind)

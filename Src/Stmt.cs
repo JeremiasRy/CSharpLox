@@ -12,6 +12,7 @@ public abstract class Stmt
     abstract R? VisitVarStmt(Var stmt);
     abstract R? VisitBreakStmt(Break stmt);
     abstract R? VisitContinueStmt(Continue stmt);
+    abstract R? VisitReturnStmtStmt(ReturnStmt stmt);
   }
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
@@ -101,5 +102,15 @@ public class Continue(Token name) : Stmt
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitContinueStmt(this);
+  }
+}
+public class ReturnStmt(Token keyword, Expr? value) : Stmt
+{
+  public readonly Token Keyword = keyword;
+  public readonly Expr? Value = value;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitReturnStmtStmt(this);
   }
 }
