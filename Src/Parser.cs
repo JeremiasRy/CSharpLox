@@ -102,7 +102,7 @@ public class Parser(List<Token> tokens)
         return ExpressionStatement();
     }
 
-    private Stmt ReturnStatement()
+    private ReturnStmt ReturnStatement()
     {
         Token keyword = Previous();
         Expr? value = null;
