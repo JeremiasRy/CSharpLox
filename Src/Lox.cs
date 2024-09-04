@@ -46,6 +46,8 @@ public static class Lox
         {
             return;
         }
+        Resolver resolver = new(_interpreter);
+        resolver.Resolve(statements);
         try
         {
             _interpreter.Interpret(statements);

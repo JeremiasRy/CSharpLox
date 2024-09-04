@@ -6,12 +6,12 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     bool _repl = false;
     Environment _environment;
     public Environment globals;
-
+    readonly Dictionary<Expr, int> _locals = [];
     public Interpreter()
     {
-        _environment = new Environment();
-        _environment.Define("clock", new Clock());
-        globals = new Environment(_environment);
+        globals = new Environment();
+        globals.Define("clock", new Clock());
+        _environment = globals;
     }
     public void SetToReplSession() => _repl = true;
 
@@ -278,23 +278,35 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 
     public object? VisitVariableExpr(Variable expr)
     {
-        object? variable = _environment.Get(expr.Name);
-        if (variable == null)
+        return LookupVariable(expr.Name, expr);
+    }
+
+    private object? LookupVariable(Token name, Variable expr)
+    {
+        if (_locals.TryGetValue(expr, out int distance))
         {
-            throw new RuntimeError(expr.Name, "Tried to access variable '" + expr.Name.Lexeme + "' before initialisation");
+            return _environment.GetAt(distance, name.Lexeme);
         }
-        return variable;
+        return _environment.Get(name);
     }
 
     public object? VisitAssignExpr(Assign expr)
     {
         object? value = Evaluate(expr.Value);
-        _environment.Assign(expr.Name, value);
+        if (_locals.TryGetValue(expr, out int distance))
+        {
+            _environment.AssignAt(distance, expr.Name, value);
+        }
+        else
+        {
+            _environment.Assign(expr.Name, value);
+        }
+
         if (_repl)
         {
             Console.WriteLine(value);
         }
-        return ThankYou.Bye;
+        return value;
     }
 
     public ThankYou? VisitBlockStmt(Block stmt)
@@ -401,5 +413,10 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
             value = Evaluate(stmt.Value);
         }
         throw new Return(value);
+    }
+
+    public void Resolve(Expr expr, int depth)
+    {
+        _locals.Add(expr, depth);
     }
 }
