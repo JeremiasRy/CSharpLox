@@ -1,11 +1,15 @@
 
-using System.Xml;
-
 namespace CSharpLox.Src;
 public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.IVisitor<ThankYou>
 {
+    private class ScopeVariableState
+    {
+        public bool Used { get; set; } = false;
+        public bool Resolved { get; set; } = false;
+    }
     readonly Interpreter _interpreter = interpreter;
-    readonly Stack<Dictionary<string, bool>> _scopes = [];
+    readonly Stack<Dictionary<string, ScopeVariableState>> _scopes = [];
+    private FunctionType _currentFunction = FunctionType.NONE;
     public ThankYou? VisitAssignExpr(Assign expr)
     {
         Resolve(expr.Value);
@@ -30,7 +34,16 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
 
     private void EndScope()
     {
-        _scopes.Pop();
+        var scope = _scopes.Pop();
+        var unusedVariables = scope.Where(state => !state.Value.Used);
+        if (unusedVariables.Any())
+        {
+            foreach (var unusedVariable in unusedVariables)
+            {
+                // This could be just a warning, but meh
+                Lox.Error(0, $"Unused variable {unusedVariable.Key}");
+            }
+        }
     }
 
     public void Resolve(List<Stmt> statements)
@@ -87,12 +100,14 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     {
         Declare(stmt.Name);
         Define(stmt.Name);
-        ResolveFunction(stmt);
+        ResolveFunction(stmt, FunctionType.FUNCTION);
         return ThankYou.Bye;
     }
 
-    private void ResolveFunction(FunctionStmt stmt)
+    private void ResolveFunction(FunctionStmt stmt, FunctionType type)
     {
+        FunctionType enclosingFunction = _currentFunction;
+        _currentFunction = type;
         BeginScope();
         foreach (var parameters in stmt.Prms)
         {
@@ -101,6 +116,7 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         }
         Resolve(stmt.Body);
         EndScope();
+        _currentFunction = enclosingFunction;
     }
 
     public ThankYou? VisitGroupingExpr(Grouping expr)
@@ -166,9 +182,16 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     {
         if (_scopes.Count != 0)
         {
-            if (_scopes.Peek().TryGetValue(expr.Name.Lexeme, out bool resolved) && !resolved)
+            if (_scopes.Peek().TryGetValue(expr.Name.Lexeme, out var state))
             {
-                Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
+                if (!state.Resolved)
+                {
+                    Lox.Error(expr.Name, "Can't read local variable in its own initializer.");
+                }
+                else
+                {
+                    state.Used = true;
+                }
             }
         }
         ResolveLocal(expr, expr.Name);
@@ -203,7 +226,7 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         {
             return;
         }
-        _scopes.Peek()[name.Lexeme] = true;
+        _scopes.Peek()[name.Lexeme].Resolved = true;
     }
 
     private void Declare(Token name)
@@ -219,7 +242,7 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
             Lox.Error(name, "Already a variable with this name in this scope");
             return;
         }
-        scope.Add(name.Lexeme, false);
+        scope.Add(name.Lexeme, new());
     }
 
     public ThankYou? VisitWhileStmt(While stmt)
@@ -227,5 +250,12 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         Resolve(stmt.Condition);
         Resolve(stmt.Body);
         return ThankYou.Bye;
+    }
+
+    private enum FunctionType
+    {
+        NONE,
+        FUNCTION
+
     }
 }

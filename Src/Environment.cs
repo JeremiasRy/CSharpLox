@@ -58,14 +58,6 @@ public class Environment
         return environment;
     }
 
-    public void LoopThrough()
-    {
-        foreach (var kv in _values)
-        {
-            Console.WriteLine($"key {kv.Key} value: {kv.Value}");
-        }
-    }
-
     internal void AssignAt(int distance, Token name, object value)
     {
         Ancestor(distance)._values.Add(name.Lexeme, value);

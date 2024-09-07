@@ -42,12 +42,12 @@ public static class Lox
         List<Token> tokens = scanner.ScanTokens();
         Parser parser = new(tokens);
         List<Stmt> statements = parser.Parse();
+        Resolver resolver = new(_interpreter);
+        resolver.Resolve(statements);
         if (_hadError || _hadRuntimeError || statements.Count == 0)
         {
             return;
         }
-        Resolver resolver = new(_interpreter);
-        resolver.Resolve(statements);
         try
         {
             _interpreter.Interpret(statements);
@@ -78,6 +78,7 @@ public static class Lox
     }
     public static void Report(int line, string where, string message)
     {
+        _hadError = true;
         Console.ForegroundColor = ConsoleColor.Red;
         Console.WriteLine("[Line: {0}] Error {1}: {2}", line, where, message);
         Console.ForegroundColor = ConsoleColor.White;

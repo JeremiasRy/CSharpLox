@@ -21,6 +21,14 @@ fun add(first, second) {
     print first + second;
 }
 
+fun jausers() {
+    var jere = "jes";
+    var piia = "supra jes";
+    print piia;
+}
+
+jausers();
+
 add(1234345, 7878);
 add("Jeremias ", "Ryttäri");
 
@@ -34,9 +42,3 @@ fun fib(n) {
 for (var i = 0; i < 20; i = i + 1) {
     print fib(i);
 }
-
-fun bad() {
-    var a = "hello";
-    var a = "supra hello";
-}
-bad();

@@ -1,0 +1,7 @@
+fun jausers() {
+    var a = "jausers";
+    var v = "supers";
+    print v;
+}
+
+jausers();
