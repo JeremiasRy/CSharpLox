@@ -252,6 +252,26 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         return ThankYou.Bye;
     }
 
+    public ThankYou? VisitClassStmt(Class stmt)
+    {
+        Declare(stmt.Name);
+        Define(stmt.Name);
+        return ThankYou.Bye;
+    }
+
+    public ThankYou? VisitGetExpr(Get expr)
+    {
+        Resolve(expr.Obj);
+        return ThankYou.Bye;
+    }
+
+    public ThankYou? VisitSetExpr(Set expr)
+    {
+        Resolve(expr.Value);
+        Resolve(expr.Obj);
+        return ThankYou.Bye;
+    }
+
     private enum FunctionType
     {
         NONE,

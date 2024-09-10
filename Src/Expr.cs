@@ -3,6 +3,8 @@ public abstract class Expr
 {
   public interface IVisitor<R>
   {
+    abstract R? VisitGetExpr(Get expr);
+    abstract R? VisitSetExpr(Set expr);
     abstract R? VisitAssignExpr(Assign expr);
     abstract R? VisitBinaryExpr(Binary expr);
     abstract R? VisitCallExpr(Call expr);
@@ -16,6 +18,27 @@ public abstract class Expr
   public abstract R Accept<R>(IVisitor<R> visitor);
 }
 
+public class Get(Expr obj, Token name) : Expr
+{
+  public readonly Expr Obj = obj;
+  public readonly Token Name = name;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitGetExpr(this);
+  }
+}
+public class Set(Expr obj, Token name, Expr value) : Expr
+{
+  public readonly Expr Obj = obj;
+  public readonly Token Name = name;
+  public readonly Expr Value = value;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitSetExpr(this);
+  }
+}
 public class Assign(Token name, Expr value) : Expr
 {
   public readonly Token Name = name;

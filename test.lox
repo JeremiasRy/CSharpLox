@@ -24,7 +24,7 @@ fun add(first, second) {
 fun jausers() {
     var jere = "jes";
     var piia = "supra jes";
-    print piia;
+    print piia + jere;
 }
 
 jausers();
@@ -42,3 +42,14 @@ fun fib(n) {
 for (var i = 0; i < 20; i = i + 1) {
     print fib(i);
 }
+
+class DevonshireCream {
+    serveOn() {
+        return "scones";
+    }
+}
+
+print DevonshireCream;
+
+var cream = DevonshireCream();
+print cream;

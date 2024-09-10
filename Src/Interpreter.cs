@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace CSharpLox.Src;
 public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 {
@@ -418,5 +416,36 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     public void Resolve(Expr expr, int depth)
     {
         _locals.Add(expr, depth);
+    }
+
+    public ThankYou? VisitClassStmt(Class stmt)
+    {
+        _environment.Define(stmt.Name.Lexeme, null);
+        LoxClass klass = new(stmt.Name.Lexeme);
+        _environment.Assign(stmt.Name, klass);
+        return ThankYou.Bye;
+    }
+
+    public object? VisitGetExpr(Get expr)
+    {
+        object obj = Evaluate(expr.Obj);
+        if (obj is LoxInstance loxInstance)
+        {
+            return loxInstance.Get(expr.Name);
+        }
+        throw new RuntimeError(expr.Name, "Only instances have properties");
+    }
+
+    public object? VisitSetExpr(Set expr)
+    {
+        object obj = Evaluate(expr.Obj);
+
+        if (obj is not LoxInstance)
+        {
+            throw new RuntimeError(expr.Name, "Only instances have fields");
+        }
+        object value = Evaluate(expr.Value);
+        ((LoxInstance)obj).Set(expr.Name, value);
+        return value;
     }
 }
