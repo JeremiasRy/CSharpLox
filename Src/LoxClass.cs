@@ -1,11 +1,13 @@
 
 
 
+
 namespace CSharpLox.Src;
 
-public class LoxClass(string name) : ILoxCallable
+public class LoxClass : ILoxCallable
 {
-    readonly public string Name = name;
+    readonly public string Name;
+    readonly Dictionary<string, LoxFunction> _methods = [];
 
     public int Arity()
     {
@@ -21,6 +23,24 @@ public class LoxClass(string name) : ILoxCallable
     public override string ToString()
     {
         return Name;
+    }
+    public LoxClass(string name)
+    {
+        Name = name;
+    }
+    public LoxClass(string name, Dictionary<string, LoxFunction> methods)
+    {
+        Name = name;
+        _methods = methods;
+    }
+
+    internal object? FindMethod(string lexeme)
+    {
+        if (_methods.TryGetValue(lexeme, out var method))
+        {
+            return method;
+        }
+        return null;
     }
 }
 
@@ -38,6 +58,12 @@ public class LoxInstance(LoxClass klass)
         if (_fields.TryGetValue(name.Lexeme, out object obj))
         {
             return obj;
+        }
+
+        var method = _klass.FindMethod(name.Lexeme);
+        if (method is not null)
+        {
+            return method;
         }
         throw new RuntimeError(name, "Undefined property '" + name.Lexeme + "'.");
     }

@@ -399,7 +399,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 
     public ThankYou? VisitFunctionStmtStmt(FunctionStmt stmt)
     {
-        LoxFunction function = new(stmt);
+        LoxFunction function = new(stmt, _environment);
         _environment.Define(stmt.Name.Lexeme, function);
         return ThankYou.Bye;
     }
@@ -421,7 +421,14 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     public ThankYou? VisitClassStmt(Class stmt)
     {
         _environment.Define(stmt.Name.Lexeme, null);
-        LoxClass klass = new(stmt.Name.Lexeme);
+
+        Dictionary<string, LoxFunction> methods = [];
+        foreach (var method in stmt.Methods)
+        {
+            var function = new LoxFunction(method, _environment);
+            methods.Add(method.Name.Lexeme, function);
+        }
+        LoxClass klass = new(stmt.Name.Lexeme, methods);
         _environment.Assign(stmt.Name, klass);
         return ThankYou.Bye;
     }

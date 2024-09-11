@@ -256,6 +256,11 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     {
         Declare(stmt.Name);
         Define(stmt.Name);
+        foreach (var method in stmt.Methods)
+        {
+            var declaration = FunctionType.METHOD;
+            ResolveFunction(method, declaration);
+        }
         return ThankYou.Bye;
     }
 
@@ -275,6 +280,7 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     private enum FunctionType
     {
         NONE,
+        METHOD,
         FUNCTION
 
     }
