@@ -1,7 +1,3 @@
-
-
-
-
 namespace CSharpLox.Src;
 
 public class LoxClass : ILoxCallable
@@ -11,12 +7,23 @@ public class LoxClass : ILoxCallable
 
     public int Arity()
     {
+        LoxFunction? initializer = (LoxFunction?)FindMethod("init");
+        if (initializer != null)
+        {
+            return initializer.Arity();
+        }
+
         return 0;
     }
 
     public object Call(Interpreter interpreter, List<object> arguments)
     {
         LoxInstance instance = new(this);
+        object? initializer = FindMethod("init");
+        if (initializer is LoxFunction init)
+        {
+            ((LoxFunction)init.Bind(instance)).Call(interpreter, arguments);
+        }
         return instance;
     }
 
@@ -60,10 +67,10 @@ public class LoxInstance(LoxClass klass)
             return obj;
         }
 
-        var method = _klass.FindMethod(name.Lexeme);
+        LoxFunction? method = (LoxFunction?)_klass.FindMethod(name.Lexeme);
         if (method is not null)
         {
-            return method;
+            return method.Bind(this);
         }
         throw new RuntimeError(name, "Undefined property '" + name.Lexeme + "'.");
     }

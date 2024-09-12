@@ -442,6 +442,10 @@ public class Parser(List<Token> tokens)
         {
             return new Literal(false);
         }
+        if (Match(TokenType.THIS))
+        {
+            return new This(Previous());
+        }
         if (Match(TokenType.TRUE))
         {
             return new Literal(true);

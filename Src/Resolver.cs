@@ -10,6 +10,7 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     readonly Interpreter _interpreter = interpreter;
     readonly Stack<Dictionary<string, ScopeVariableState>> _scopes = [];
     private FunctionType _currentFunction = FunctionType.NONE;
+    private ClassType _currentClass = ClassType.NONE;
     public ThankYou? VisitAssignExpr(Assign expr)
     {
         Resolve(expr.Value);
@@ -159,6 +160,10 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     {
         if (stmt.Value != null)
         {
+            if (_currentFunction == FunctionType.INITIALIZER)
+            {
+                Lox.Error(stmt.Keyword, "Can't return from initializers");
+            }
             Resolve(stmt.Value);
         }
         return ThankYou.Bye;
@@ -254,13 +259,24 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
 
     public ThankYou? VisitClassStmt(Class stmt)
     {
+        ClassType enclosingClass = _currentClass;
+        _currentClass = ClassType.CLASS;
         Declare(stmt.Name);
         Define(stmt.Name);
+
+        BeginScope();
+        _scopes.Peek().Add("this", new ScopeVariableState() { Resolved = true });
         foreach (var method in stmt.Methods)
         {
             var declaration = FunctionType.METHOD;
+            if (method.Name.Lexeme.Equals("init"))
+            {
+                declaration = FunctionType.INITIALIZER;
+            }
             ResolveFunction(method, declaration);
         }
+        EndScope();
+        _currentClass = enclosingClass;
         return ThankYou.Bye;
     }
 
@@ -277,11 +293,28 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         return ThankYou.Bye;
     }
 
+    public ThankYou? VisitThisExpr(This expr)
+    {
+        if (_currentClass == ClassType.NONE)
+        {
+            Lox.Error(expr.Keyword, "Can't use 'this' outside of a class");
+            return ThankYou.Bye;
+        }
+        ResolveLocal(expr, expr.Keyword);
+        return ThankYou.Bye;
+    }
+
     private enum FunctionType
     {
         NONE,
         METHOD,
+        INITIALIZER,
         FUNCTION
+    }
 
+    private enum ClassType
+    {
+        NONE,
+        CLASS
     }
 }

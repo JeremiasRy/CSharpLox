@@ -279,7 +279,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         return LookupVariable(expr.Name, expr);
     }
 
-    private object? LookupVariable(Token name, Variable expr)
+    private object? LookupVariable(Token name, Expr expr)
     {
         if (_locals.TryGetValue(expr, out int distance))
         {
@@ -399,7 +399,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 
     public ThankYou? VisitFunctionStmtStmt(FunctionStmt stmt)
     {
-        LoxFunction function = new(stmt, _environment);
+        LoxFunction function = new(stmt, _environment, false);
         _environment.Define(stmt.Name.Lexeme, function);
         return ThankYou.Bye;
     }
@@ -425,7 +425,7 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         Dictionary<string, LoxFunction> methods = [];
         foreach (var method in stmt.Methods)
         {
-            var function = new LoxFunction(method, _environment);
+            var function = new LoxFunction(method, _environment, method.Name.Lexeme.Equals("init"));
             methods.Add(method.Name.Lexeme, function);
         }
         LoxClass klass = new(stmt.Name.Lexeme, methods);
@@ -454,5 +454,10 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
         object value = Evaluate(expr.Value);
         ((LoxInstance)obj).Set(expr.Name, value);
         return value;
+    }
+
+    public object? VisitThisExpr(This expr)
+    {
+        return LookupVariable(expr.Keyword, expr);
     }
 }

@@ -5,6 +5,7 @@ public abstract class Expr
   {
     abstract R? VisitGetExpr(Get expr);
     abstract R? VisitSetExpr(Set expr);
+    abstract R? VisitThisExpr(This expr);
     abstract R? VisitAssignExpr(Assign expr);
     abstract R? VisitBinaryExpr(Binary expr);
     abstract R? VisitCallExpr(Call expr);
@@ -37,6 +38,15 @@ public class Set(Expr obj, Token name, Expr value) : Expr
   public override R Accept<R>(IVisitor<R> Visitor)
   {
     return Visitor.VisitSetExpr(this);
+  }
+}
+public class This(Token keyword) : Expr
+{
+  public readonly Token Keyword = keyword;
+
+  public override R Accept<R>(IVisitor<R> Visitor)
+  {
+    return Visitor.VisitThisExpr(this);
   }
 }
 public class Assign(Token name, Expr value) : Expr
