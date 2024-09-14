@@ -420,15 +420,34 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
 
     public ThankYou? VisitClassStmt(Class stmt)
     {
-        _environment.Define(stmt.Name.Lexeme, null);
+        object? superclass = null;
+        if (stmt.Superclass != null)
+        {
+            superclass = Evaluate(stmt.Superclass);
+            if (superclass is not LoxClass)
+            {
+                throw new RuntimeError(stmt.Superclass.Name, "Superclass must be a class");
+            }
 
+        }
+        _environment.Define(stmt.Name.Lexeme, null);
+        if (stmt.Superclass is not null)
+        {
+            _environment = new Environment(_environment);
+            _environment.Define("super", superclass);
+        }
         Dictionary<string, LoxFunction> methods = [];
         foreach (var method in stmt.Methods)
         {
             var function = new LoxFunction(method, _environment, method.Name.Lexeme.Equals("init"));
             methods.Add(method.Name.Lexeme, function);
         }
-        LoxClass klass = new(stmt.Name.Lexeme, methods);
+        LoxClass klass = new(stmt.Name.Lexeme, methods, (LoxClass?)superclass);
+
+        if (stmt.Superclass is not null)
+        {
+            _environment = _environment.Enclosing;
+        }
         _environment.Assign(stmt.Name, klass);
         return ThankYou.Bye;
     }
@@ -459,5 +478,19 @@ public class Interpreter : Expr.IVisitor<object>, Stmt.IVisitor<ThankYou>
     public object? VisitThisExpr(This expr)
     {
         return LookupVariable(expr.Keyword, expr);
+    }
+
+    public object? VisitSuperExpr(Super expr)
+    {
+        int distance = _locals[expr];
+        LoxClass superclass = (LoxClass)_environment.GetAt(distance, "super");
+        LoxInstance obj = (LoxInstance)_environment.GetAt(distance - 1, "this");
+        LoxFunction? method = (LoxFunction?)superclass.FindMethod(expr.Method.Lexeme);
+
+        if (method == null)
+        {
+            throw new RuntimeError(expr.Method, "Undefined property '" + expr.Method.Lexeme + "'.");
+        }
+        return method.Bind(obj);
     }
 }

@@ -4,6 +4,7 @@ public class LoxClass : ILoxCallable
 {
     readonly public string Name;
     readonly Dictionary<string, LoxFunction> _methods = [];
+    readonly LoxClass? _superclass;
 
     public int Arity()
     {
@@ -35,10 +36,11 @@ public class LoxClass : ILoxCallable
     {
         Name = name;
     }
-    public LoxClass(string name, Dictionary<string, LoxFunction> methods)
+    public LoxClass(string name, Dictionary<string, LoxFunction> methods, LoxClass? superclass = null)
     {
         Name = name;
         _methods = methods;
+        _superclass = superclass;
     }
 
     internal object? FindMethod(string lexeme)
@@ -46,6 +48,10 @@ public class LoxClass : ILoxCallable
         if (_methods.TryGetValue(lexeme, out var method))
         {
             return method;
+        }
+        if (_superclass is not null)
+        {
+            return _superclass.FindMethod(lexeme);
         }
         return null;
     }

@@ -27,9 +27,10 @@ public class Block(List<Stmt> statements) : Stmt
     return Visitor.VisitBlockStmt(this);
   }
 }
-public class Class(Token name, List<FunctionStmt> methods) : Stmt
+public class Class(Token name, Variable superclass, List<FunctionStmt> methods) : Stmt
 {
   public readonly Token Name = name;
+  public readonly Variable Superclass = superclass;
   public readonly List<FunctionStmt> Methods = methods;
 
   public override R Accept<R>(IVisitor<R> Visitor)

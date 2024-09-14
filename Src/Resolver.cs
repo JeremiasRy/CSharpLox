@@ -263,6 +263,22 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         _currentClass = ClassType.CLASS;
         Declare(stmt.Name);
         Define(stmt.Name);
+        if (stmt.Superclass is not null && stmt.Superclass.Name.Lexeme.Equals(stmt.Name.Lexeme))
+        {
+            Lox.Error(stmt.Superclass.Name, "A class can't inherit from itself.");
+        }
+        if (stmt.Superclass is not null)
+        {
+            _currentClass = ClassType.SUBCLASS;
+            Resolve(stmt.Superclass);
+        }
+
+        if (stmt.Superclass is not null)
+        {
+            BeginScope();
+            _scopes.Peek().Add("super", new() { Resolved = true });
+
+        }
 
         BeginScope();
         _scopes.Peek().Add("this", new ScopeVariableState() { Resolved = true });
@@ -276,6 +292,10 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
             ResolveFunction(method, declaration);
         }
         EndScope();
+        if (stmt.Superclass is not null)
+        {
+            EndScope();
+        }
         _currentClass = enclosingClass;
         return ThankYou.Bye;
     }
@@ -304,6 +324,20 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
         return ThankYou.Bye;
     }
 
+    public ThankYou? VisitSuperExpr(Super expr)
+    {
+        if (_currentClass == ClassType.NONE)
+        {
+            Lox.Error(expr.Keyword, "Can't use 'super' outside of a class");
+        }
+        else if (_currentClass != ClassType.SUBCLASS)
+        {
+            Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
+        }
+        ResolveLocal(expr, expr.Keyword);
+        return ThankYou.Bye;
+    }
+
     private enum FunctionType
     {
         NONE,
@@ -315,6 +349,7 @@ public class Resolver(Interpreter interpreter) : Expr.IVisitor<ThankYou>, Stmt.I
     private enum ClassType
     {
         NONE,
-        CLASS
+        CLASS,
+        SUBCLASS
     }
 }

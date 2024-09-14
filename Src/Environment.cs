@@ -1,7 +1,7 @@
 namespace CSharpLox.Src;
 public class Environment
 {
-    readonly Environment? _enclosing;
+    public readonly Environment? Enclosing;
     readonly Dictionary<string, object?> _values = [];
     public void Define(string name, object? value)
     {
@@ -23,9 +23,9 @@ public class Environment
             _values[name.Lexeme] = value;
             return;
         }
-        if (_enclosing != null)
+        if (Enclosing != null)
         {
-            _enclosing.Assign(name, value);
+            Enclosing.Assign(name, value);
             return;
         }
         throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'.");
@@ -36,9 +36,9 @@ public class Environment
         {
             return value;
         }
-        if (_enclosing != null)
+        if (Enclosing != null)
         {
-            return _enclosing.Get(name);
+            return Enclosing.Get(name);
         }
         throw new RuntimeError(name, "Undefined variable '" + name.Lexeme + "'.");
     }
@@ -53,7 +53,7 @@ public class Environment
         var environment = this;
         for (int i = 0; i < distance; i++)
         {
-            environment = environment._enclosing;
+            environment = environment.Enclosing;
         }
         return environment;
     }
@@ -65,11 +65,11 @@ public class Environment
 
     public Environment()
     {
-        _enclosing = null;
+        Enclosing = null;
     }
     public Environment(Environment enclosing)
     {
-        _enclosing = enclosing;
+        Enclosing = enclosing;
     }
 
 }
